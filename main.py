@@ -86,7 +86,9 @@ class Detector(Image):
             return self.norm_image_size[1] - im_touch_y, im_touch_x
 
     def _get_frame(self, img_brg):
-        img_rgb = cv2.cvtColor(src=img_brg, code=cv2.COLOR_BGR2RGB)
+        img_rgb = img_brg
+        if self.source == 'cam':
+            img_rgb = cv2.cvtColor(src=img_brg, code=cv2.COLOR_BGR2RGB)
 
         prepared_frame = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
         prepared_frame = cv2.GaussianBlur(src=prepared_frame, ksize=(5, 5), sigmaX=0)
