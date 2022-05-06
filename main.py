@@ -66,7 +66,6 @@ class Detector(Image):
         self.rectangles.clear()
 
     def on_touch_down(self, touch):
-        print("test")
         self.touch_down_pos = self.get_click_pos(touch)
 
     def on_touch_up(self, touch):
