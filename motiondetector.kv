@@ -16,6 +16,7 @@
             id: slider
             min: 0
             max: 255
+            value: 20
             step: 1
             on_touch_move: detector.thresh = self.value
         Label:
@@ -24,5 +25,9 @@
             text: "{:3.2f}".format(slider.value)
         Button:
             size_hint_x: 0.2
-            text: 'A button'
+            text: 'Debug'
+            #on_release: root.enter_coordinates()
+        Button:
+            size_hint_x: 0.2
+            text: 'Clear mask'
             #on_release: root.enter_coordinates()
