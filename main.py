@@ -17,7 +17,6 @@ def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, rect, mu
 
     s = (int(s_f[0] * mult), int(s_f[1] * mult))
     e = (int(e_f[0] * mult), int(e_f[1] * mult))
-    print(s, e)
     for i in range(s[0], e[0]):
         for j in range(s[1], e[1]):
             previous_frame[i, j] = 0
