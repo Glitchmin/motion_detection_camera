@@ -11,21 +11,26 @@ from kivy.graphics.texture import Texture
 
 def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, rect, mult=1.0):
     s_f, e_f = rect
-
     s = (int(s_f[0] * mult), int(s_f[1] * mult))
     e = (int(e_f[0] * mult), int(e_f[1] * mult))
+    mult_i = int(mult+1)
 
-    print(s, e)
     for i in range(s[0], e[0]):
         for j in range(s[1], e[1]):
             previous_frame[i, j] = 0
             prepared_frame[i, j] = 0
-    for i in range(s[0], e[0]):
-        img_rgb[i, s[1]] = 100
-        img_rgb[i, e[1]] = 100
-    for i in range(s[1], e[1]):
-        img_rgb[s[0], i] = 100
-        img_rgb[e[0], i] = 100
+    for k in range(mult_i):
+        for i in range(s[0], e[0]):
+            if s[1]+k < len(img_rgb[0]):
+                img_rgb[i, s[1]+k] = 100
+            if e[1]+k < len(img_rgb[0]):
+                img_rgb[i, e[1]+k] = 100
+        for i in range(s[1], e[1]):
+            if s[1] + k < len(img_rgb[0]):
+                if s[0] + k < len(img_rgb[0]):
+                    img_rgb[s[0]+k, i] = 100
+                if e[0] + k < len(img_rgb[0]):
+                    img_rgb[e[0]+k, i] = 100
 
 
 class Detector(Image):
@@ -112,6 +117,7 @@ class Detector(Image):
         self.texture = image_texture
 
     def change_source(self):
+        self.clear_rects()
         if self.source == "cam":
             self.source = "screen"
         else:
