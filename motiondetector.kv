@@ -1,0 +1,23 @@
+<DetectorWidget>
+    orientation: "vertical"
+    Detector:
+        fps: 30
+        size_hint_y: 0.9
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: 0.05
+        Slider:
+            size_hint_x: 0.7
+            id: slider
+            min: 0
+            max: 255
+            step: 1
+            #on_touch_move: root.heatmap_layer.reposition()
+        Label:
+            size_hint_x: 0.1
+
+            text: "{:3.2f}".format(slider.value)
+        Button:
+            size_hint_x: 0.2
+            text: 'A button'
+            #on_release: root.enter_coordinates()
