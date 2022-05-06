@@ -14,6 +14,8 @@ def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, rect, mu
 
     s = (int(s_f[0] * mult), int(s_f[1] * mult))
     e = (int(e_f[0] * mult), int(e_f[1] * mult))
+
+    print(s, e)
     for i in range(s[0], e[0]):
         for j in range(s[1], e[1]):
             previous_frame[i, j] = 0
@@ -40,7 +42,11 @@ class Detector(Image):
 
         Clock.schedule_interval(self.update, 1.0 / self.fps)
 
+    def clear_rects(self):
+        self.rectangles.clear()
+
     def on_touch_down(self, touch):
+        print("test")
         self.touch_down_pos = self.get_click_pos(touch)
 
     def on_touch_up(self, touch):
