@@ -1,10 +1,7 @@
-from enum import Enum
-
 import numpy as np
 import cv2
 from PIL import ImageGrab
 
-import kivy
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
@@ -19,18 +16,67 @@ class ImageMode(Enum):
     full = 4
 
 
+def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, rect, mult=1.0):
+    s_f, e_f = rect
+    s = (int(s_f[0] * mult), int(s_f[1] * mult))
+    e = (int(e_f[0] * mult), int(e_f[1] * mult))
+    mult_i = int(mult+1)
+
+    for i in range(s[0], e[0]):
+        for j in range(s[1], e[1]):
+            previous_frame[i, j] = 0
+            prepared_frame[i, j] = 0
+    for k in range(mult_i):
+        for i in range(s[0], e[0]):
+            if s[1]+k < len(img_rgb[0]):
+                img_rgb[i, s[1]+k] = 100
+            if e[1]+k < len(img_rgb[0]):
+                img_rgb[i, e[1]+k] = 100
+        for i in range(s[1], e[1]):
+            if s[1] + k < len(img_rgb[0]):
+                if s[0] + k < len(img_rgb[0]):
+                    img_rgb[s[0]+k, i] = 100
+                if e[0] + k < len(img_rgb[0]):
+                    img_rgb[e[0]+k, i] = 100
+
+
 class Detector(Image):
     def __init__(self, **kwargs):
         super(Detector, self).__init__(**kwargs)
         self.previous_frame = None
         self.thresh = 20
         self.cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.touch_down_pos = None
+        self.rectangles = []
 
         self.source = "cam"
         self.fps = 30
         self.mode = ImageMode.full
 
         Clock.schedule_interval(self.update, 1.0 / self.fps)
+
+    def clear_rects(self):
+        self.rectangles.clear()
+
+    def on_touch_down(self, touch):
+        print("test")
+        self.touch_down_pos = self.get_click_pos(touch)
+
+    def on_touch_up(self, touch):
+        if self.touch_down_pos is not None and self.get_click_pos(touch) is not None:
+            self.rectangles.append((self.touch_down_pos, self.get_click_pos(touch)))
+
+    def get_click_pos(self, touch):
+        im_x = (self.size[0] - self.norm_image_size[0]) / 2.0 + self.x
+        im_y = (self.size[1] - self.norm_image_size[1]) / 2.0 + self.y
+        im_touch_x = touch.x - im_x
+        im_touch_y = touch.y - im_y
+        if im_touch_x < 0 or im_touch_x > self.norm_image_size[0]:
+            return None
+        elif im_touch_y < 0 or im_touch_y > self.norm_image_size[1]:
+            return None
+        else:
+            return self.norm_image_size[1] - im_touch_y, im_touch_x
 
     def _get_frame(self, img_brg):
         img_rgb = cv2.cvtColor(src=img_brg, code=cv2.COLOR_BGR2RGB)
@@ -41,6 +87,10 @@ class Detector(Image):
         if self.previous_frame is None:
             self.previous_frame = prepared_frame
             return
+
+        for r in self.rectangles:
+            add_no_detection_rectangle(img_rgb, prepared_frame, self.previous_frame, r,
+                                       self.texture_size[0] / self.norm_image_size[0])
 
         diff_frame = cv2.absdiff(src1=self.previous_frame, src2=prepared_frame)
         self.previous_frame = prepared_frame
@@ -86,6 +136,14 @@ class Detector(Image):
         # display image from the texture
         self.texture = image_texture
 
+    def change_source(self):
+        self.clear_rects()
+        if self.source == "cam":
+            self.source = "screen"
+        else:
+            self.source = "cam"
+        self.previous_frame = None
+
 
 class DetectorWidget(BoxLayout):
     pass
@@ -98,3 +156,4 @@ class MotionDetectorApp(App):
 
 if __name__ == '__main__':
     MotionDetectorApp().run()
+
