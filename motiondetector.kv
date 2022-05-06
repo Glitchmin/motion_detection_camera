@@ -1,5 +1,17 @@
 #: import ImageMode main.ImageMode
 
+<MainLayout>
+    do_default_tab: False
+    tab_width: self.width / 2
+
+    TabbedPanelItem:
+        text: "Detector"
+        DetectorWidget:
+
+    TabbedPanelItem:
+        text: "Debug"
+        DebugWidget:
+
 <DetectorWidget>
     orientation: "vertical"
     Detector:
@@ -9,31 +21,63 @@
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: 0.05
-        Label:
-            size_hint_x: 0.1
+        Tools:
 
-            text: "Thresh:"
-        Slider:
-            size_hint_x: 0.7
-            id: slider
-            min: 0
-            max: 255
-            value: 20
-            step: 1
-            on_touch_move: detector.thresh = self.value
-        Label:
-            size_hint_x: 0.1
-
-            text: "{:3.2f}".format(slider.value)
-        Button:
-            size_hint_x: 0.2
-            text: 'Debug'
-            #on_release: root.enter_coordinates()
         Button:
             size_hint_x: 0.2
             text: 'Clear mask'
             on_release: detector.clear_rects()
-        Button:
-            size_hint_x: 0.2
-            text: 'Source'
-            on_release: detector.change_source()
+
+<DebugWidget>
+    orientation: "vertical"
+    GridLayout:
+        cols: 2
+        Detector:
+            id: prepared_detector
+            fps: 30
+            size_hint_y: 0.9
+            mode: ImageMode.prepared
+        Detector:
+            id: diff_detector
+            fps: 30
+            size_hint_y: 0.9
+            mode: ImageMode.diff
+        Detector:
+            id: thresh_detector
+            fps: 30
+            size_hint_y: 0.9
+            mode: ImageMode.thresh
+        Detector:
+            id: full_detector
+            fps: 30
+            size_hint_y: 0.9
+            mode: ImageMode.full
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: 0.05
+        Tools:
+
+
+<Tools>:
+    orientation: 'horizontal'
+    Label:
+        size_hint_x: 0.1
+
+        text: "Thresh:"
+    Slider:
+        size_hint_x: 0.7
+        id: slider
+        min: 0
+        max: 255
+        value: 20
+        step: 1
+#        on_touch_move: detector.thresh = self.value
+    Label:
+        size_hint_x: 0.1
+
+        text: "{:3.2f}".format(slider.value)
+    Button:
+        size_hint_x: 0.2
+        text: 'Source'
+        on_release: root.parent.parent.change_source()

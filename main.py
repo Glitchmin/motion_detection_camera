@@ -1,3 +1,5 @@
+from enum import Enum
+
 import numpy as np
 import cv2
 from PIL import ImageGrab
@@ -7,6 +9,7 @@ from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
+from kivy.uix.tabbedpanel import TabbedPanel
 
 
 class ImageMode(Enum):
@@ -16,11 +19,15 @@ class ImageMode(Enum):
     full = 4
 
 
+class Tools(BoxLayout):
+    pass
+
+
 def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, rect, mult=1.0):
     s_f, e_f = rect
     s = (int(s_f[0] * mult), int(s_f[1] * mult))
     e = (int(e_f[0] * mult), int(e_f[1] * mult))
-    mult_i = int(mult+1)
+    mult_i = int(mult + 1)
 
     for i in range(s[0], e[0]):
         for j in range(s[1], e[1]):
@@ -28,16 +35,16 @@ def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, rect, mu
             prepared_frame[i, j] = 0
     for k in range(mult_i):
         for i in range(s[0], e[0]):
-            if s[1]+k < len(img_rgb[0]):
-                img_rgb[i, s[1]+k] = 100
-            if e[1]+k < len(img_rgb[0]):
-                img_rgb[i, e[1]+k] = 100
+            if s[1] + k < len(img_rgb[0]):
+                img_rgb[i, s[1] + k] = 100
+            if e[1] + k < len(img_rgb[0]):
+                img_rgb[i, e[1] + k] = 100
         for i in range(s[1], e[1]):
             if s[1] + k < len(img_rgb[0]):
                 if s[0] + k < len(img_rgb[0]):
-                    img_rgb[s[0]+k, i] = 100
+                    img_rgb[s[0] + k, i] = 100
                 if e[0] + k < len(img_rgb[0]):
-                    img_rgb[e[0]+k, i] = 100
+                    img_rgb[e[0] + k, i] = 100
 
 
 class Detector(Image):
@@ -146,14 +153,26 @@ class Detector(Image):
 
 
 class DetectorWidget(BoxLayout):
+    def change_source(self):
+        self.ids.detector.change_source()
+
+
+class DebugWidget(BoxLayout):
+    def change_source(self):
+        self.ids.prepared_detector.change_source()
+        self.ids.thresh_detector.change_source()
+        self.ids.diff_detector.change_source()
+        self.ids.full_detector.change_source()
+
+
+class MainLayout(TabbedPanel):
     pass
 
 
 class MotionDetectorApp(App):
     def build(self):
-        return DetectorWidget()
+        return MainLayout()
 
 
 if __name__ == '__main__':
     MotionDetectorApp().run()
-
