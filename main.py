@@ -1,3 +1,5 @@
+from enum import Enum
+
 import numpy as np
 import cv2
 from PIL import ImageGrab
@@ -7,9 +9,14 @@ from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
-from kivy.uix.layout import Layout
-from kivy.uix.widget import Widget
 from kivy.graphics.texture import Texture
+
+
+class ImageMode(Enum):
+    prepared = 1
+    diff = 2
+    thresh = 3
+    full = 4
 
 
 class Detector(Image):
@@ -21,18 +28,11 @@ class Detector(Image):
 
         self.source = "cam"
         self.fps = 30
+        self.mode = ImageMode.full
 
         Clock.schedule_interval(self.update, 1.0 / self.fps)
 
-    def update(self, dt):
-        if self.source == "cam":
-            _, img_brg = self.cam.read()
-        elif self.source == "screen":
-            img_brg = np.array(ImageGrab.grab())
-        else:
-            print("wrong source")
-            exit(0)
-
+    def _get_frame(self, img_brg):
         img_rgb = cv2.cvtColor(src=img_brg, code=cv2.COLOR_BGR2RGB)
 
         prepared_frame = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
@@ -57,9 +57,29 @@ class Detector(Image):
             (x, y, w, h) = cv2.boundingRect(contour)
             cv2.rectangle(img=img_rgb, pt1=(x, y), pt2=(x + w, y + h), color=(0, 255, 0), thickness=2)
 
-        frame = img_rgb
+        if self.mode.value is ImageMode.prepared.value:
+            return cv2.cvtColor(src=prepared_frame, code=cv2.COLOR_GRAY2RGB)
+        elif self.mode.value is ImageMode.diff.value:
+            return cv2.cvtColor(src=diff_frame, code=cv2.COLOR_GRAY2RGB)
+        elif self.mode.value is ImageMode.thresh.value:
+            return cv2.cvtColor(src=thresh_frame, code=cv2.COLOR_GRAY2RGB)
+        else:
+            return img_rgb
+
+    def update(self, dt):
+        if self.source == "cam":
+            _, img_brg = self.cam.read()
+        elif self.source == "screen":
+            img_brg = np.array(ImageGrab.grab())
+        else:
+            print("wrong source")
+            exit(0)
+
+        frame = self._get_frame(img_brg)
+        if frame is None:
+            return
         buf1 = cv2.flip(frame, 0)
-        buf = buf1.tostring()
+        buf = buf1.tobytes()
         image_texture = Texture.create(
             size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
@@ -75,6 +95,6 @@ class MotionDetectorApp(App):
     def build(self):
         return DetectorWidget()
 
+
 if __name__ == '__main__':
     MotionDetectorApp().run()
-
