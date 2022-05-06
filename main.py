@@ -3,6 +3,19 @@ import cv2
 from PIL import ImageGrab
 
 
+def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, s_x, e_x, s_y, e_y):
+    for i in range(s_x, e_x):
+        for j in range(s_y, e_y):
+            previous_frame[i, j] = 0
+            prepared_frame[i, j] = 0
+    for i in range(s_x, e_x):
+        img_rgb[i, s_y] = 100
+        img_rgb[i, e_y] = 100
+    for i in range(s_y, e_y):
+        img_rgb[s_x, i] = 100
+        img_rgb[e_x, i] = 100
+
+
 def motion_detector():
     frame_count = 0
     previous_frame = None
@@ -20,6 +33,8 @@ def motion_detector():
             if previous_frame is None:
                 previous_frame = prepared_frame
                 continue
+
+            add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, 0, 200, 0, 200)
 
             diff_frame = cv2.absdiff(src1=previous_frame, src2=prepared_frame)
             previous_frame = prepared_frame
