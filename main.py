@@ -2,13 +2,10 @@ import numpy as np
 import cv2
 from PIL import ImageGrab
 
-import kivy
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
-from kivy.uix.layout import Layout
-from kivy.uix.widget import Widget
 from kivy.graphics.texture import Texture
 
 
@@ -38,7 +35,7 @@ class Detector(Image):
         self.touch_down_pos = None
         self.rectangles = []
 
-        self.source = "cam"
+        self.source = "screen"
         self.fps = 30
 
         Clock.schedule_interval(self.update, 1.0 / self.fps)
@@ -107,6 +104,13 @@ class Detector(Image):
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         # display image from the texture
         self.texture = image_texture
+
+    def change_source(self):
+        if self.source == "cam":
+            self.source = "screen"
+        else:
+            self.source = "cam"
+        self.previous_frame = None
 
 
 class DetectorWidget(BoxLayout):
