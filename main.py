@@ -3,14 +3,23 @@ import cv2
 from PIL import ImageGrab
 
 
-def motion_detector():
+def motion_detector(source: str):
     frame_count = 0
     previous_frame = None
+    if source == "cam":
+        cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
     while True:
         frame_count += 1
 
-        img_brg = np.array(ImageGrab.grab())
+        if source == "cam":
+            _, img_brg = cam.read()
+        elif source == "screen":
+            img_brg = np.array(ImageGrab.grab())
+        else:
+            print("wrong source")
+            exit(0)
+
         img_rgb = cv2.cvtColor(src=img_brg, code=cv2.COLOR_BGR2RGB)
 
         prepared_frame = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
@@ -41,4 +50,4 @@ def motion_detector():
             break
 
 
-motion_detector()
+motion_detector("cam")
