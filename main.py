@@ -104,8 +104,8 @@ class Detector(Image):
         buf1 = cv2.flip(frame, 0)
         buf = buf1.tostring()
         image_texture = Texture.create(
-            size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-        image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+            size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         # display image from the texture
         self.texture = image_texture
 

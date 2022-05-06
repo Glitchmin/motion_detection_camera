@@ -7,18 +7,27 @@
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: 0.05
+        Label:
+            size_hint_x: 0.1
+
+            text: "Thresh:"
         Slider:
             size_hint_x: 0.7
             id: slider
             min: 0
             max: 255
+            value: 20
             step: 1
-            #on_touch_move: root.heatmap_layer.reposition()
+            on_touch_move: detector.thresh = self.value
         Label:
             size_hint_x: 0.1
 
             text: "{:3.2f}".format(slider.value)
         Button:
             size_hint_x: 0.2
-            text: 'A button'
+            text: 'Debug'
+            #on_release: root.enter_coordinates()
+        Button:
+            size_hint_x: 0.2
+            text: 'Clear mask'
             #on_release: root.enter_coordinates()
