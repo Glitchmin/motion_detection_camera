@@ -12,6 +12,19 @@ from kivy.uix.widget import Widget
 from kivy.graphics.texture import Texture
 
 
+def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, s_x, e_x, s_y, e_y):
+    for i in range(s_x, e_x):
+        for j in range(s_y, e_y):
+            previous_frame[i, j] = 0
+            prepared_frame[i, j] = 0
+    for i in range(s_x, e_x):
+        img_rgb[i, s_y] = 100
+        img_rgb[i, e_y] = 100
+    for i in range(s_y, e_y):
+        img_rgb[s_x, i] = 100
+        img_rgb[e_x, i] = 100
+
+
 class Detector(Image):
     def __init__(self, **kwargs):
         super(Detector, self).__init__(**kwargs)
@@ -75,6 +88,6 @@ class MotionDetectorApp(App):
     def build(self):
         return DetectorWidget()
 
+
 if __name__ == '__main__':
     MotionDetectorApp().run()
-
