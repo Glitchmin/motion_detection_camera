@@ -152,18 +152,26 @@ class Detector(Image):
         self.previous_frame = None
 
 
-class DetectorWidget(BoxLayout):
+class ViewerWidget(BoxLayout):
     def change_source(self):
-        self.ids.detector.change_source()
+        for detector in self.detectors:
+            self.ids[detector].change_source()
+
+    def set_tresh(self, value):
+        for detector in self.detectors:
+            self.ids[detector].thresh = value
 
 
-class DebugWidget(BoxLayout):
-    def change_source(self):
-        self.ids.prepared_detector.change_source()
-        self.ids.thresh_detector.change_source()
-        self.ids.diff_detector.change_source()
-        self.ids.full_detector.change_source()
+class DebugWidget(ViewerWidget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.detectors = ['prepared_detector', 'thresh_detector', 'diff_detector', 'full_detector']
 
+
+class DetectorWidget(ViewerWidget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.detectors = ['detector']
 
 class MainLayout(TabbedPanel):
     pass
