@@ -58,6 +58,50 @@
         size_hint_y: 0.05
         Tools:
 
+<PathDialog>:
+    size_hint_y: 0.6
+    size_hint_x: 0.8
+
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "horizontal"
+            Label:
+                size_hint_x: 0.3
+                text: "Path:"
+            TextInput:
+                id: txt_in
+                text: r"https://ipox.biz:8143/iscng/snapadthv2036sl.m3u8"
+                font_size: 18
+
+        BoxLayout:
+            size_hint_y: 0.2
+            orientation: "horizontal"
+
+            Button:
+                text: 'Set'
+                on_press: root.save()
+
+            Button:
+                text: 'Cancel'
+                on_press: root.cancel()
+
+<CustomDropDown>:
+    Button:
+        text: 'webcam'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('cam')
+    Button:
+        text: 'screen'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('screen')
+    Button:
+        text: 'link/path'
+        size_hint_y: None
+        height: 44
+        on_release: root.path_prompt()
 
 <Tools>:
     orientation: 'horizontal'
@@ -78,6 +122,8 @@
 
         text: "{:3.2f}".format(slider.value)
     Button:
+        id: drop_button
         size_hint_x: 0.2
-        text: 'Source'
-        on_release: root.parent.parent.change_source()
+        text: 'source'
+#        on_release: root.dropdown.open
+

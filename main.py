@@ -7,8 +7,10 @@ from PIL import ImageGrab
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.dropdown import DropDown
 from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
+from kivy.uix.popup import Popup
 from kivy.uix.tabbedpanel import TabbedPanel
 
 
@@ -19,8 +21,40 @@ class ImageMode(Enum):
     full = 4
 
 
+class PathDialog(Popup):
+
+    def __init__(self, parent_widget, title='Insert path or link to your source',
+                 **kwargs):  # my_widget is now the object where popup was called from.
+        super(PathDialog, self).__init__(title=title, **kwargs)
+        self.parent_widget = parent_widget
+
+    def save(self, *args):
+        self.parent_widget.select(self.ids.txt_in.text)
+        self.dismiss()
+
+    def cancel(self, *args):
+        self.dismiss()
+
+
+class CustomDropDown(DropDown):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.popup = PathDialog(self)
+
+    def path_prompt(self):
+        self.popup.open()
+
+
 class Tools(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.dropdown = CustomDropDown()
+        Clock.schedule_once(self.init_ui, 0)
+
+    def init_ui(self, dt=0):
+        self.ids.drop_button.bind(on_release=self.dropdown.open)
+        # self.dropdown.bind(on_select=lambda instance, x: setattr(self.ids.drop_button, 'text', x))
+        self.dropdown.bind(on_select=lambda instance, source, path = None: self.parent.parent.change_source(source))
 
 
 def add_no_detection_rectangle(img_rgb, prepared_frame, previous_frame, rect, mult=1.0):
@@ -53,10 +87,12 @@ class Detector(Image):
         self.previous_frame = None
         self.thresh = 20
         self.cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.link_video = None
         self.touch_down_pos = None
         self.rectangles = []
 
         self.source = "cam"
+        self.path = None
         self.fps = 30
         self.mode = ImageMode.full
 
@@ -86,7 +122,7 @@ class Detector(Image):
 
     def _get_frame(self, img_brg):
         img_rgb = img_brg
-        if self.source == 'cam':
+        if self.source != 'screen':
             img_rgb = cv2.cvtColor(src=img_brg, code=cv2.COLOR_BGR2RGB)
 
         prepared_frame = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
@@ -130,8 +166,10 @@ class Detector(Image):
         elif self.source == "screen":
             img_brg = np.array(ImageGrab.grab())
         else:
-            print("wrong source")
-            exit(0)
+            _, img_brg = self.link_video.read()
+            # self.cam = cv2.VideoCapture(self.path)
+            # print("wrong source")
+            # exit(0)
 
         frame = self._get_frame(img_brg)
         if frame is None:
@@ -144,19 +182,29 @@ class Detector(Image):
         # display image from the texture
         self.texture = image_texture
 
-    def change_source(self):
+    def change_source(self, source: str, path: str = None):
         self.clear_rects()
-        if self.source == "cam":
-            self.source = "screen"
+        # if self.source == "cam":
+        #     self.source = "screen"
+        # else:
+        #     self.source = "cam"
+
+        if source == "cam" or source == "screen":
+            self.source = source
+            # self.cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         else:
-            self.source = "cam"
+            self.source = "link"
+            self.path = source
+            self.link_video = cv2.VideoCapture(source)
+            # print("NOT IMPLEMENTED")
+
         self.previous_frame = None
 
 
 class ViewerWidget(BoxLayout):
-    def change_source(self):
+    def change_source(self, source: str, path: str = None):
         for detector in self.detectors:
-            self.ids[detector].change_source()
+            self.ids[detector].change_source(source, path)
 
     def set_tresh(self, value):
         for detector in self.detectors:
@@ -173,6 +221,7 @@ class DetectorWidget(ViewerWidget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.detectors = ['detector']
+
 
 class MainLayout(TabbedPanel):
     pass
